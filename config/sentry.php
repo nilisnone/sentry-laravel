@@ -106,6 +106,22 @@ return [
 
         // Enable the tracing integrations supplied by Sentry (recommended)
         'default_integrations' => env('SENTRY_TRACE_DEFAULT_INTEGRATIONS_ENABLED', true),
+
+        // Enable window rate mode
+        // When opened within the same window of time only sample requests with performance within the specified range and increment a certain value.
+        'window_mode' => env('SENTRY_TRACE_WINDOW_MODE', false),
+
+        // Only support 1 ~ 10
+        'window_minutes' => env('SENTRY_TRACE_WINDOW_MINUTES', 2),
+
+        // Only performance >= window_min_ms
+        'window_min_ms' => env('SENTRY_TRACE_WINDOW_MIN_MS', 0),
+
+        // Only performance <= window_max_ms
+        'window_max_ms' => env('SENTRY_TRACE_WINDOW_MAX_MS', 60000),
+
+        // Step milliseconds
+        'window_step_ms' => env('SENTRY_TRACE_WINDOW_STEP_MS', 500),
     ],
 
 ];

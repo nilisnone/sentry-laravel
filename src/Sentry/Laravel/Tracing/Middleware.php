@@ -5,6 +5,7 @@ namespace Sentry\Laravel\Tracing;
 use Closure;
 use Illuminate\Contracts\Foundation\Application as LaravelApplication;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Cache;
 use Laravel\Lumen\Application as LumenApplication;
 use Sentry\SentrySdk;
 use Sentry\State\HubInterface;
@@ -265,6 +266,12 @@ class Middleware
             return;
         }
 
+        // If window mode is set the decision to sample will be based on whether the performance
+        // falls within the specified range in the window of time and increments by the specified value.
+        if ((config('sentry.tracing.window_mode', false) === true) && !$this->getWindowModeSampled()) {
+            $this->transaction->setSampled(false);
+        }
+
         // Make sure we set the transaction and not have a child span in the Sentry SDK
         // If the transaction is not on the scope during finish, the trace.context is wrong
         SentrySdk::getCurrentHub()->setSpan($this->transaction);
@@ -300,5 +307,37 @@ class Middleware
         }
 
         app(self::class)->internalSignalRouteWasMatched();
+    }
+
+    protected function getWindowModeSampled(): bool
+    {
+        $name = 'SENTRY_WINDOW_' . $this->transaction->getName();
+        $sampled = false;
+
+        $min = config('sentry.tracing.window_min_ms', 0);
+        $max = config('sentry.tracing.window_max_ms', 60000);
+        $step = config('sentry.tracing.window_step_ms', 500);
+        if (!Cache::has($name)) {
+            $sampled = true;
+            $lastPerformance = -$step;
+        } else {
+            $lastPerformance = Cache::get($name) ?? 0;
+        }
+
+        $performance = microtime(true) * 1000 - $this->transaction->getStartTimestamp() * 1000;
+        if ($performance < $lastPerformance + $step || $performance < $min || $performance > $max) {
+            return $sampled;
+        }
+        $sampled = true;
+
+        Cache::put($name, $performance, $this->getRemainSecondsInCurrentWindow());
+        return $sampled;
+    }
+
+    protected function getRemainSecondsInCurrentWindow(): int
+    {
+        $curMinutes = date('i');
+        $window = config('sentry.tracing.window_minutes', 2);
+        return $window * 60 - 1 - date('s') - (60 * ($curMinutes % $window));
     }
 }
