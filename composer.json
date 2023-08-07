@@ -1,5 +1,5 @@
 {
-    "name": "sentry/sentry-laravel",
+    "name": "nilisnone/sentry-laravel",
     "type": "library",
     "description": "Laravel SDK for Sentry (https://sentry.io)",
     "keywords": [
