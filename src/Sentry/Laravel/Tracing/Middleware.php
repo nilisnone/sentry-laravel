@@ -338,6 +338,10 @@ class Middleware
     {
         $curMinutes = date('i');
         $window = config('sentry.tracing.window_minutes', 2);
-        return $window * 60 - 1 - date('s') - (60 * ($curMinutes % $window));
+        $seconds = $window * 60 - 1 - date('s') - (60 * ($curMinutes % $window));
+        if ($seconds < 1) {
+            $seconds = 1;
+        }
+        return $seconds;
     }
 }
