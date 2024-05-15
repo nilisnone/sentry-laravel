@@ -10,6 +10,9 @@ return [
     // @see https://docs.sentry.io/product/sentry-basics/dsn-explainer/
     'dsn' => env('SENTRY_LARAVEL_DSN', env('SENTRY_DSN')),
 
+    // @see: https://docs.sentry.io/platforms/php/guides/laravel/configuration/options/#logger
+    // 'logger' => Sentry\Logger\DebugFileLogger::class, // By default this will log to `storage_path('logs/sentry.log')`
+
     // The release version of your application
     // Example with dynamic git hash: trim(exec('git --git-dir ' . base_path('.git') . ' log --pretty="%h" -n1 HEAD'))
     'release' => env('SENTRY_RELEASE'),
@@ -63,6 +66,9 @@ return [
 
         // Capture HTTP client request information as breadcrumbs
         'http_client_requests' => env('SENTRY_BREADCRUMBS_HTTP_CLIENT_REQUESTS_ENABLED', true),
+
+        // Capture send notifications as breadcrumbs
+        'notifications' => env('SENTRY_BREADCRUMBS_NOTIFICATIONS_ENABLED', true),
     ],
 
     // Performance monitoring specific configuration
@@ -82,6 +88,9 @@ return [
         // Capture where the SQL query originated from on the SQL query spans
         'sql_origin' => env('SENTRY_TRACE_SQL_ORIGIN_ENABLED', true),
 
+        // Define a threshold in milliseconds for SQL queries to resolve their origin
+        'sql_origin_threshold_ms' => env('SENTRY_TRACE_SQL_ORIGIN_THRESHOLD_MS', 100),
+
         // Capture views rendered as spans
         'views' => env('SENTRY_TRACE_VIEWS_ENABLED', true),
 
@@ -96,6 +105,9 @@ return [
 
         // Capture where the Redis command originated from on the Redis command spans
         'redis_origin' => env('SENTRY_TRACE_REDIS_ORIGIN_ENABLED', true),
+
+        // Capture send notifications as spans
+        'notifications' => env('SENTRY_TRACE_NOTIFICATIONS_ENABLED', true),
 
         // Enable tracing for requests without a matching route (404's)
         'missing_routes' => env('SENTRY_TRACE_MISSING_ROUTES_ENABLED', false),
